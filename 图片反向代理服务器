@@ -1,0 +1,152 @@
+#图片反向代理服务器1-Qiniu
+server {
+    listen unix:/var/tmp/img_server1.sock;
+    server_name localhost;
+    error_log /www/wwwlogs/img_server1.error.log error;
+    access_log /www/wwwlogs/img_server1.access.log combined;
+
+    location / {
+        proxy_pass http://image.jianxiaoxin.com/;
+    }
+}
+
+#图片反向代理服务器2-Upyun
+server {
+    listen unix:/var/tmp/img_server2.sock;
+    server_name localhost;
+    error_log /www/wwwlogs/img_server2.error.log error;
+    access_log /www/wwwlogs/img_server2.access.log combined;
+
+    location / {
+        proxy_pass https://upimg.jianxiaoxin.com/;
+    }
+}
+
+#图片反向代理服务器3-Netease
+server {
+    listen unix:/var/tmp/img_server3.sock;
+    server_name localhost;
+    error_log /www/wwwlogs/img_server3.error.log error;
+    access_log /www/wwwlogs/img_server3.access.log combined;
+
+    location / {
+        proxy_pass http://markdown-bucket.nos-eastchina1.126.net/;
+    }
+}
+
+#图片反向代理服务器4-Tecent
+server {
+    listen unix:/var/tmp/img_server4.sock;
+    server_name localhost;
+    error_log /www/wwwlogs/img_server4.error.log error;
+    access_log /www/wwwlogs/img_server4.access.log combined;
+
+    location / {
+        proxy_pass https://singworld-1253240475.cos.ap-beijing.myqcloud.com/;
+    }
+}
+
+#图片反向代理服务器5-Ucloud 广东
+server {
+    listen unix:/var/tmp/img_server5.sock;
+    server_name localhost;
+    error_log /www/wwwlogs/img_server5.error.log error;
+    access_log /www/wwwlogs/img_server5.access.log combined;
+
+    location / {
+        proxy_pass http://ucgzimg.jianxiaoxin.com/;
+    }
+}
+
+#图片反向代理服务器6-Ucloud-bj
+server {
+    listen unix:/var/tmp/img_server6.sock;
+    server_name localhost;
+    error_log /www/wwwlogs/img_server6.error.log error;
+    access_log /www/wwwlogs/img_server6.access.log combined;
+
+    location / {
+        proxy_pass http://ucbjimg.jianxiaoxin.com/;
+    }
+}
+
+#图片反向代理服务器7-Ucloud-sh2
+server {
+    listen unix:/var/tmp/img_server7.sock;
+    server_name localhost;
+    error_log /www/wwwlogs/img_server7.error.log error;
+    access_log /www/wwwlogs/img_server7.access.log combined;
+
+    location / {
+        proxy_pass http://ucshimg.jianxiaoxin.com/;
+    }
+}
+
+#图片反向代理服务器8-QingCloud-gd2
+server {
+    listen unix:/var/tmp/img_server8.sock;
+    server_name localhost;
+    error_log /www/wwwlogs/img_server8.error.log error;
+    access_log /www/wwwlogs/img_server8.access.log combined;
+
+    location / {
+        proxy_pass http://qcgzimg.jianxiaoxin.com/;
+    }
+}
+
+#图片反向代理服务器9-QingCloud-bj3
+server {
+    listen unix:/var/tmp/img_server9.sock;
+    server_name localhost;
+    error_log /www/wwwlogs/img_server9.error.log error;
+    access_log /www/wwwlogs/img_server9.access.log combined;
+
+    location / {
+        proxy_pass http://qcbjimg.jianxiaoxin.com;
+    }
+}
+
+#负载均衡
+upstream image_server {
+    #Qiniu => 每月10G免费下载流量,每天341M 总3478
+    server unix:/var/tmp/img_server1.sock weight=8;
+    #Upyun=>每月15G免费下载流量,每天512M
+    server unix:/var/tmp/img_server2.sock weight=1;
+    #Netease=>每月20G免费下载流量，每天682M
+    #server unix:/var/tmp/img_server3.sock weight=18;
+    #Tecent=>每月10G免费下载流量，每天341M
+    server unix:/var/tmp/img_server4.sock weight=9;
+    #Ucloud-gz=>每月20G免费下载流量，每天682M
+    server unix:/var/tmp/img_server5.sock weight=20;
+    #Ucloud-bj=>每月20G免费下载流量，每天682M
+    server unix:/var/tmp/img_server6.sock weight=20;
+    #Ucloud-sh2=>每月20G免费下载流量，每天682M
+    server unix:/var/tmp/img_server7.sock weight=20;
+    #QingCloud-gd2=>每月11G免费下载流量，每天375M
+    server unix:/var/tmp/img_server8.sock weight=11;
+    #QingCloud-bj3=>每月11G免费下载流量，每天375M
+    server unix:/var/tmp/img_server9.sock weight=11;
+}
+
+#图片服务器
+server {
+    #listen 80;
+	listen 443 ssl http2;
+	#listen 443 ssl http2;
+	#listen 443 ssl http2;
+    server_name img.jianxiaoxin.com;
+    error_log /www/wwwlogs/img.xiebruce.top.error.log error;
+    access_log /www/wwwlogs/img.xiebruce.top.access.log combined;
+
+
+    #请求转发到image_server定义的服务器列表
+    location / {
+        proxy_pass http://image_server;
+        proxy_set_header Host localhost;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}
+
+
+

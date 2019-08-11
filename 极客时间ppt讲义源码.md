@@ -3,4 +3,4 @@ https://github.com/geektime-geekbang/
 
 
 ### nginx 
-https://github.com/geektime-geekbang/
+https://github.com/geektime-geekbang/geektime-nginx
